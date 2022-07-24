@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Indian Cricket Team Salary & Grading points Analysis</title>
+    
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            position: relative;
+            width: 960px;
+        }
+		.annotitle {
+  font-size: 1.4em;
+  fill:#E8336D;
+}
+.annolabel {
+  font-size: 1em;
+  fill: #E8336D;
+}
+        .axis text {
+            font:  sans-serif;
+        }
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+        .bar {
+            fill-opacity: .9;
+        }
+        .x.axis path {
+            display: none;
+        }
+		.next {
+            background-color: #4CAF50;
+            color: white;
+		}
+		.previous {
+            background-color: #f1f1f1;
+            color: black;
+        }
+		a {
+		text-decoration: none;
+		display: inline-block;
+		padding: 8px 16px;
+	}
+
+	a:hover {
+		background-color: #ddd;
+		color: black;
+	}
+        label {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        rect:hover {
+            fill: blue;
+        }
+        rect {
+            -moz-transition: all 0.3s;
+            -o-transition: all 0.3s;
+            -webkit-transition: all 0.3s;
+            transition: all 0.3s;
+        }
+
+
+		            .tooltip {
+                position: absolute;			
+                text-align: left;			
+                width: 170px;					
+                height: 50px;					
+                padding: 2px;				
+                font: 12px sans-serif;		
+                background: rgb(220, 228, 223);	
+                border: 1px;		
+                border-radius: 8px;			
+                pointer-events: none;	
+            }
+
+        #tooltip.hidden {
+            display: none;
+        }
+
+        #tooltip p {
+            margin: 0;
+            font-family: sans-serif;
+            font-size: 16px;
+            line-height: 20px;
+        }
+		.title {
+		font-size: 1.8em;
+		fill: #635F5D;
+		}
+.axis-label {
+  font-size: 1.8em;
+  fill: #8E8883;
+}
+
+    </style>
+</head>
+
+<body style="font-family:'Times New Roman', Times, serif;">
+
+            <p style="font-size: 16px;color:#FF0000">
+		<b><i>hover over the bars to get more detail</i></b>
+        </p>
+    <script src='https://d3js.org/d3.v5.min.js'></script>
+    <script>
+        
+			var margin = {top: 50, right: 100, bottom: 100, left: 120},
+				width = 1050 - margin.left - margin.right,
+				height = 700 - margin.top - margin.bottom;
+
+
+		var x=d3.scaleBand().rangeRound([0, width]).padding(0.1);
+        var y = d3.scaleLinear().rangeRound([height, 0]);
+		var color = d3.scaleOrdinal().range(["#ff1a55","#83a0a6","#d7bdee","#0000ff","#ffdab9","#aaaaaa",
+												"#b55ff6","#ffd700","#afeeee","#008000","#0ba0e3",
+												"#6e8692","#7000f8","#3d3d3d","#f6cd37","#ff0000",
+												"#81f67d","#c1442e","#bbc2c8","#d11e5d","#514d5b",
+												"#b297ba","#78b0df","#969dff","#ffa500","#ff9bdc",
+												"#ffd700","#ff9a9a","#e18a7a","4b0082"]).domain(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", 
+																												"M", "N", "O", "P", "Q", "R", "R", "T", "U", "V", "W", "X", 
+																												"Y", "Z", "AA", "AB", "AC", "AD"]);
+		const title='Indian Cricket Team Earnings & Grades 2022';																						
+																									
+		var render=data => {
+			
+            x.domain(data.map(function(d) { return d.TEAM; }));
+            y.domain([50000000, d3.max(data, function(d) { return d.VALUE; })]);
+			const xAxisLabel = 'Team';
+            const gxaxis=svg.append("g")
+                .attr("class", "x axis")
+				.attr("transform", `translate(${0}, ${height})`)
+                .call(d3.axisBottom(x));
+
+			gxaxis.append('text')
+				.attr('class', 'axis-label')
+				.attr("y",50)
+				.attr("x",(width-margin.right)/2)
+				.text(xAxisLabel);					
+				
+            const gyaxis=svg.append("g")
+                .attr("class", "y axis")
+                .call(d3.axisLeft(y))
+
+			gyaxis.append('text')
+				.attr('class', 'axis-label')
+				.attr("y",0)
+				.attr("x",0)
+				.text('Earnings');
+				
+
+            svg.selectAll(".bar")
+                .data(data)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d) { return x(d.TEAM); })
+				.attr("width", x.bandwidth())
+                .attr("y", function(d) { return y(d.VALUE); })
+				.attr("fill",function(d,i){return color(i)})
+                .attr("height", function(d) { return height - y(d.VALUE); })
+			
+                .on("mouseover", function(d) {
+
+                    //x and y position
+                    var xPosition = parseFloat(d3.select(this).attr("x")) ;
+                    var yPosition = parseFloat(d3.select(this).attr("y")) / 2 ;
+
+                    //Update the tooltip position and value
+                    d3.select(".tooltip")
+                        .style("left", xPosition + "px")
+                        .style("top", yPosition + "px")						
+                        .select("#value")
+                        .text(d);
+
+
+                    d3.select(".tooltip").classed("hidden", false);
+                })
+                .on("mouseout", function() {
+                    //hide tooltip
+                    d3.select(".tooltip").classed("hidden", true);
+                })
+                .append("title")
+                .text(function(d) {
+                    return "Salary:- "+d.VALUE;
+                    });
+			svg.append('text')
+				.attr('class', 'title')
+				.attr("y",-20)
+				.attr("x",(width-margin.right)/4)
+				.text(title);
+
+    svg.append('line')
+  .attr("x1", 5)
+  .attr("y1", 110)
+  .attr("x2", 750)
+  .attr("y2", 110)
+	.style("stroke-dasharray","5,5")//dashed array for line
+      //.style("stroke", color);
+    .style("stroke", "#E8336D");
+	
+  svg.append('text')
+      .attr('class', 'annotitle')
+      .attr('y', 110)
+	  .attr('x',700)
+  //    .text("Grade A+ Players above this line");	
+
+  svg.append('text')
+      .attr('class', 'annotitle')
+      .attr('y', 90)
+	  .attr('x',400)
+      .text("Grade A & Above Players");
+	  
+   svg.append('text')
+      .attr('class', 'annotitle')
+      .attr('y', 150)
+	  .attr('x',400)
+      .text("Below Grade A Players");
+	
+svg.append('line')
+  .attr("x1", 190)
+  .attr("y1", 140)
+  .attr("x2", 250)
+  .attr("y2", 100)
+  //.style("stroke", "#E8336D");
+  
+   svg.append('text')
+      .attr('class', 'annotitle')
+      .attr('y', 80)
+	  .attr('x',220)
+   //   .text("Ravindra Jadeja");
+
+  svg.append('text')
+      .attr('class', 'annolabel')
+      .attr('y', 100)
+	  .attr('x',220)
+    //  .text("Salary: INR 5 Cr");	  
+		};
+		
+
+
+
+		
+        var svg = d3.select("body")
+			.append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+			.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			
+        d3.csv("https://raw.githubusercontent.com/anjalis622/anjalis62022/main/playersandsalaryandwins.csv").then(data => {
+            data.forEach(d=> {
+                d.VALUE = +d.Salary;
+                d.TEAM =  d["Tm"];
+            });
+			//data.sort(function(a,b){ return b.VALUE-a.VALUE});
+			render(data);
+
+        });
+    </script>
+	
+        <p>
+			
+            <b>Observations:</b>Virat Kohli (VK), Rohit Sharma(RS) and Jasprit Bumrah (JB)have the top most salaries and are exceeding Grade A.<br>
+			Click Next to see HOW these salaries are related to Man of the Match/Series/Tournament wins.<br><br>
+			<a href="https://anjalis622.github.io/anjalis62022/index.html" class="previous">&laquo; Previous</a>
+            <a href="https://anjalis622.github.io/anjalis62022/salaryandwins.html" class="next">Next &raquo;</a>
+			<br>
+			
+
+        </p>
+</body>
+</html>
