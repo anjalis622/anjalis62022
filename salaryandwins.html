@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Salary and Wins Scatter Plot</title>
+	<style>
+    body {
+  margin: 0px;
+  overflow: hidden;
+}
+
+circle {
+  fill: red;
+  opacity: 0.9;
+}
+a {
+		text-decoration: none;
+		display: inline-block;
+		padding: 8px 16px;
+	}
+
+	a:hover {
+		background-color: #ddd;
+		color: black;
+	}
+text {
+ font-family: sans-serif;
+}
+
+.tick text {
+  font-size: 2.7em;
+  fill: #635F5D;
+}
+
+.tick line {
+  stroke: #C0C0BB;
+}
+
+.axis-label {
+  font-size: 1.8em;
+  fill: #8E8883;
+}
+.legend {
+  font-size: .8em;
+  fill: #8E8883;
+}
+.title {
+  font-size: 1.8em;
+  fill: #635F5D;
+}
+.annotitle {
+  font-size: 1.4em;
+  fill:#E8336D;
+}
+.annolabel {
+  font-size: 1em;
+  fill: #E8336D;
+}
+
+
+            .tooltip {
+                position: absolute;			
+                text-align: left;			
+                width: 170px;					
+                height: 50px;					
+                padding: 2px;				
+                font: 12px sans-serif;		
+                background: rgb(220, 228, 223);	
+                border: 1px;		
+                border-radius: 8px;			
+                pointer-events: none;	
+            }
+.next {
+	background-color: #4CAF50;
+	color: white;
+}
+.previous {
+	background-color: #f1f1f1;
+	color: black;
+}
+</style>
+    <script src='https://d3js.org/d3.v5.min.js'></script>
+  </head>
+  <body>
+            <p style="font-size: 16px;color:#FF0000">
+		<b><i>hover over the mouse to get more details</i></b>
+        </p>
+    <svg width="1050" height="700"></svg>
+    <script>
+
+
+const svg = d3.select('svg');
+
+const width = +svg.attr('width');
+const height = +svg.attr('height');
+
+const render = data => {
+  const title = 'Salary & Wins contribution to Grade';
+  
+  const xValue = d => d.SALARY;
+  const xAxisLabel = 'Salary';
+  
+  const yValue = d => d.WINS;
+  const circleRadius = 10;
+  const yAxisLabel = 'Wins #';
+  
+  const margin = { top: 50, right: 100, bottom: 100, left: 120 };
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
+var color = d3.scaleOrdinal().range(["#ffd700", "#0ba0e3", "#ff9bdc", "#4b0082","#0000ff",
+												"#008000", "#ffa500", "#ff0000", "#969dff","#ff1a55",
+												"#b55ff6", "#d11e5d", "#b297ba", "#78b0df","#3d3d3d",
+												"#7000f8", "#bbc2c8", "#6e8692", "#aaaaaa","#f6cd37",
+												"#83a0a6", "#c1442e", "#514d5b", "#e18a7a","#ffdab9",
+												"#ff9a9a", "#afeeee", "#ffd700", "#81f67d","#d7bdee"]).domain(["AD", "DEA", "XAV", "WAS", "UY", "BK", "SY", "WS", "HV", "SG", "DC", "MA", 
+																												"YC", "HP", "SD", "IS", "MO", "ST", "SI", "CP", "AP", "AR", "MS", "RP", 
+																												"RJ", "RA", "KL", "JB", "RS", "VK"]);
+  const xScale = d3.scaleLinear()
+    .domain(d3.extent(data, xValue))
+    .range([0, innerWidth])
+	//.tickFormat(d3.format(".0s"))
+    .nice();
+  
+  const yScale = d3.scaleLinear()
+    .domain(d3.extent(data, yValue))
+    .range([innerHeight, 0])
+    .nice();
+  
+  const g = svg.append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+  var formatValue = d3.format(".2s");
+  const xAxis = d3.axisBottom(xScale)
+    //.tickSize(-innerHeight)
+	.tickSize(10)
+	.ticks(5)
+	.tickFormat(function(d) { return formatValue(d)});
+    //.tickPadding(15);
+	//.format("s");
+  
+  const yAxis = d3.axisLeft(yScale)
+    .tickSize(10)
+    .tickPadding(20);
+  
+  const yAxisG = g.append('g').call(yAxis);
+  //yAxisG.selectAll('.domain').remove();
+  
+  yAxisG.append('text')
+      .attr('class', 'axis-label')
+      .attr('y', -93)
+      .attr('x', -innerHeight / 2)
+      .attr('fill', 'black')
+      .attr('transform', `rotate(-90)`)
+      .attr('text-anchor', 'middle')
+      .text(yAxisLabel);
+  
+  const xAxisG = g.append('g').call(xAxis)
+    .attr('transform', `translate(0,${innerHeight})`);
+  
+  //xAxisG.select('.domain').remove();
+  
+  xAxisG.append('text')
+      .attr('class', 'axis-label')
+      .attr('y', 75)
+      .attr('x', innerWidth / 2)
+      .attr('fill', 'black')
+      .text(xAxisLabel);
+  var tooltip = d3.select("body")
+  .append("div")
+  .attr('class', 'tooltip');
+
+
+
+
+	
+  g.selectAll('circle').data(data)
+    .enter().append('circle')
+      .attr('cy', d => yScale(yValue(d)))
+      .attr('cx', d => xScale(xValue(d)))
+      .attr('r', circleRadius)
+	  .style('fill', function(d){ return color(d.TEAM); })
+	   .on("mouseover", function(d) {
+	   	      d3.select(this)
+	.transition()
+	.duration(100)
+	.attr('r',20)
+	.attr('fill','#ff0000');
+    return tooltip.style("visibility", "visible").html("<span> Player : " + d.TEAM + "<br/>" + "Wins  : " + yValue(d) + "<br/>" + "Salary : " + xValue(d) + "<br /></span>")
+		                      .style("left",  (d3.event.pageX + 30) + "px")
+                      .style("top", (d3.event.pageY - 28) + "px");}) 
+	
+  
+  // move tooltip
+  
+  .on("mousemove", function() {
+    return tooltip.style("top", (event.pageY - 30) + "px")
+      .style("left", event.pageX + "px");
+  })
+  
+  // mouseout hide tooltip
+  
+  .on("mouseout", function() {
+  	d3.select(this)
+	        .transition()
+        .duration(100)
+	.attr('r', 10);
+    return tooltip.style("visibility", "hidden");
+  });
+  	
+
+  g.append('text')
+      .attr('class', 'title')
+      .attr('y', -20)
+	  .attr('x',innerWidth/2-50)
+      .text(title);
+
+	
+  svg.append('text')
+      .attr('class', 'annotitle')
+      .attr('y', 100)
+	  .attr('x',500)
+   //   .text("Houston");
+	  
+  svg.append('text')
+      .attr('class', 'annolabel')
+      .attr('y', 120)
+	  .attr('x',500)
+   //   .text("Wins: 65");
+	  
+  svg.append('text')
+      .attr('class', 'annolabel')
+      .attr('y', 140)
+	  .attr('x',500)
+    //  .text("Salary: 114.9M");
+ //g.append('text')
+  //  .attr("fill", "black")
+   // .attr("x", width * 0.1)
+   // .attr("y", 50 )
+    //.style("font-size", "1em")
+    //.attr("width", 200)
+    //.attr("height", 20)
+    //.text("Higher Salary tends to lead to higher wins");
+	
+
+                var legend = svg.selectAll(".legend")
+                        .data(color.domain())
+                        .enter().append("g")
+                        .attr("class", "legend")
+                        .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+                    legend.append("rect")
+                        .attr("x", width -10)
+						.attr("y", 58)
+                        .attr("width", 18)
+                        .attr("height", 10)
+                        .style("fill", function(d) {
+                            // console.log(color(d)+" "+d);
+                            return color(d);});
+
+                    legend.append("text")
+                        .attr("x", width - 26)
+                        .attr("y", 68)
+                        .attr("dy", ".15em")
+                        .style("text-anchor", "end")
+                        .text(function(d) { return d;});
+						
+
+   //.attr("y", function(d) {
+      //  return yScale(yValue(d));
+   //})
+   //})
+};
+
+d3.csv('https://raw.githubusercontent.com/anjalis622/anjalis62022/main/playersandsalaryandwins.csv')
+  .then(data => {
+    data.forEach(d => {
+      d.SALARY = +d.Salary;
+      d.WINS = +d.Wins;
+	  d.TEAM=d.Tm
+
+    });
+    render(data);
+  });
+  
+  
+	</script>
+	
+        <p>
+            <b>Observations:</b>Virat Kohli, Rohit Sharma and Jasprit Bumrah have the top most salaries & exceeding grade A,Also contribute to the maximum number of wins in the matches/series/tournament,<br>
+			Click Next to see if these salaries related to wins.<br><br>
+			<a href="https://anjalis622.github.io/anjalis62022/earningsandgrades.html" class="previous">&laquo; Previous</a>
+			<br>
+			
+
+        </p>
+</body>
+</html>
